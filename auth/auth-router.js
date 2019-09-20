@@ -11,7 +11,7 @@ router.post('/register', (req, res) => {
 
   userDb.add(user)
     .then(saved => {
-      res.status(201).json(`record with id ${saved} has been added to the database`)
+      res.status(201).json(`The record with id ${saved} has been registered to the database`)
     })
     .catch(error => {
       res.status(500).json(error)
@@ -20,6 +20,24 @@ router.post('/register', (req, res) => {
 
 router.post('/login', (req, res) => {
   // implement login
+  let { username, password } = req.body;
+
+  userDb.findBy({ username })
+    .first()
+    .then(user => {
+      if (user && bcrypt.compareSync(password, user.password)) {
+        const token = userDb.generateToken(user);
+        res.status(200).json({
+          message: `${user.username} has logged in`,
+          token
+        })
+      } else {
+        res.status(401).json({ message: 'Invalid credentials' })
+      }
+    })
+    .catch(error => {
+      res.status(500).json(error)
+    })
 });
 
 module.exports = router;
